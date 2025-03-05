@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{{ super() }}
+<h3>
+  Search Latest
+</h3>
+<p>
+  This page allows you to search the latest data from synthetic SEC filings. You can search by CIK or Company name and
+  visualize the data by company.
+</p>
+<input class="form-control" type="search" name="search" placeholder="Search by CIK or Company" hx-post="/search-latest"
+  hx-trigger="input changed delay:500ms, search" hx-target="#search-results">
+<br>
+
+<div hx-post="/search-latest" hx-target="#search-results" hx-trigger="load">
+  <div class="results-section" id="search-results">
+    <!-- This will be replaced by the server response -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>CIK</th>
+            <th>Company</th>
+            <th>CUSIP</th>
+            <th>Date</th>
+            <th>Balance</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="10">Enter search term to see results</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="visualization-container">
+      <h3>Visualization</h3>
+      <div id="chart"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

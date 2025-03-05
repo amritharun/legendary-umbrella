@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{{ super() }}
+<h3>
+  Search Real SEC Filings
+</h3>
+<p>
+  This page allows you to search the latest data from the latest SEC filings. You can search by partial CIK to get
+  results.
+</p>
+<input class="form-control" type="search" name="search" placeholder="Search by partial CIK" hx-post="/search-real"
+  hx-trigger="keyup changed delay:1000ms, search" hx-target="#search-results">
+
+<br>
+
+<div hx-post="/search-real" hx-target="#search-results" hx-trigger="load">
+  <div class="results-section" id="search-results">
+    <!-- This will be replaced by the server response -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>CIK</th>
+            <th>Company</th>
+            <th>CUSIP</th>
+            <th>Date</th>
+            <th>Balance</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="10">Enter search term to see results</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

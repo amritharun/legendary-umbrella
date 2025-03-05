@@ -1,0 +1,141 @@
+{% import "_macros.html" as macros %}
+
+<!doctype html>
+<html lang="en">
+
+{{ macros.head() }}
+
+<body>
+  {{ macros.navbar() }}
+
+  <style>
+    tr:hover {
+      background-color: #8471e41a;
+    }
+
+    tr:hover td {
+      background-color: transparent;
+    }
+  </style>
+
+  <div class="container my-5">
+    {% block content %}
+    {% endblock %}
+    <!-- Client-side script to initialize the D3 visualization -->
+    <script>
+      // Initialize an empty chart
+      initChart([], "");
+
+      // Function to initialize and update the D3 chart
+      function initChart(data, title) {
+        if (data.length === 0) {
+          d3.select("#chart")
+            .append("p")
+            .text("No data to visualize. Try using the search bar above.");
+          return;
+        }
+        console.log(data);
+
+        // Set up dimensions
+        const margin = { top: 100, right: 100, bottom: 170, left: 100 };
+        const width = 1000 - margin.left - margin.right;
+        const height = 700 - margin.top - margin.bottom;
+
+        // Create SVG
+        const svg = d3.select("#chart")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // X scale (product names)
+        const x = d3.scaleBand()
+          .domain(data.map(d => d.x_value))
+          .range([0, width])
+          .padding(0.1);
+
+        // Y scale (prices)
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, d => d.y_value) * 1.1])
+          .range([height, 0]);
+
+        // Add X axis
+        svg.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .attr("transform", "translate(-10,0)rotate(-45)")
+          .style("font-size", "14px")
+          .style("text-anchor", "end");
+
+        // Add Y axis
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add Y axis label
+        svg.append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0 - margin.left)
+          .attr("x", 0 - (height / 2))
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+          .style("font-size", "20px")
+          .text("Value");
+
+        // Add bars
+        svg.selectAll(".bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("class", "bar")
+          .attr("x", d => x(d.x_value))
+          .attr("width", x.bandwidth())
+          .attr("y", d => y(d.y_value))
+          .attr("height", d => height - y(d.y_value))
+          .attr("fill", "#09014f")
+          .append("title")
+          .text(d => `${d.x_value}: $${d.y_value}`);
+
+        svg.append('text')
+          .attr('x', width / 2)
+          .attr('y', margin.top / 2 - 40)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '16px')
+          .style('font-weight', 'bold')
+          .attr("fill", "#09014f")
+          .text(title);
+      }
+
+      // Event listener for custom event from server response
+      document.body.addEventListener('dataUpdated', function (evt) {
+
+        const displayData = [];
+        console.log(evt.detail);
+        const queryType = evt.detail.queryType;
+        const title = evt.detail.title;
+        evt.detail.data.forEach(element => {
+          if (queryType === "latest" || queryType === "real") {
+            displayData.push({
+              x_value: element.company,
+              y_value: element.value
+            });
+          } else {
+            displayData.push({
+              x_value: element.date,
+              y_value: element.value
+            });
+          }
+        });
+
+        initChart(displayData, title);
+      });
+    </script>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
